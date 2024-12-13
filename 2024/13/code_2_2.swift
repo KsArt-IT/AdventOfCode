@@ -52,6 +52,8 @@ struct ClawMachine {
 }
 
 // MARK: - Start
+let date = Date.now
+
 let data = parseInput(inputTest)
 let (prizesWon, totalTokens) = calculate(data)
 print("one:")
@@ -59,27 +61,28 @@ print("prizesWon: \(prizesWon)")
 print("totalTokens: \(totalTokens)")
 
 let higherPrize = 10_000_000_000_000
-print("\ntwo: +\(higherPrize)")
 let (prizesWon2, totalTokens2) = calculate(data, higherPrize)
+print("\ntwo: +\(higherPrize)")
 print("prizesWon: \(prizesWon2)")
 print("totalTokens: \(totalTokens2)")
+print("\ntime: \(Date.now.timeIntervalSince(date))")
 
 // MARK: - Func
 func calculate(_ machines: [ClawMachine], _ higher: Int = 0) -> (Int, Int) {
     let cost = Point(x: 3, y: 1) // A = 3, B = 1
+    let costs = machines.compactMap(solve)
+    return (costs.count, costs.reduce(0, +))
 
-    let costs = machines.compactMap { machine in
-        if let result = solve(for: machine, higher) {
+    func solve(for machine: ClawMachine) -> Int? {
+        if let result = solvePoint(for: machine, higher) {
             (result * cost).sum()
         } else {
             nil
         }
     }
-
-    return (costs.count, costs.reduce(0, +))
 }
 
-func solve(for machine: ClawMachine, _ higher: Int) -> Point? {
+func solvePoint(for machine: ClawMachine, _ higher: Int) -> Point? {
     let determinantAB = determinant(machine.a, machine.b)
     guard determinantAB != 0 else { return nil }
 
@@ -104,27 +107,22 @@ func solve(for machine: ClawMachine, _ higher: Int) -> Point? {
 
 func parseInput(_ input: String) -> [ClawMachine] {
     let lines = input.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }
-    var machines = [ClawMachine]()
-    let chars: CharacterSet = ["=", "+", ",", "X", "Y"]
+    return stride(from: 0, to: lines.count, by: 3).compactMap(createMachine)
 
-    func lineComponents(_ separate: CharacterSet, at index: Int) -> [Int] {
-        guard 0..<lines.count ~= index else { return [0, 0] }
+    func createMachine(at index: Int) -> ClawMachine? {
+        guard let a = components(at: index),
+              let b = components(at: index + 1),
+              let p = components(at: index + 2) else { return nil }
 
-        return lines[index].components(separatedBy: separate).compactMap(Int.init)
+        return ClawMachine(a: a, b: b, prize: p)
     }
 
-    for i in stride(from: 0, to: lines.count, by: 3) {
-        let aValues = lineComponents(chars, at: i)
-        let bValues = lineComponents(chars, at: i + 1)
-        let prizeValues = lineComponents(chars, at: i + 2)
+    func components(at index: Int) -> Point? {
+        guard 0..<lines.count ~= index else { return nil }
 
-        let machine = ClawMachine(
-            a: Point(x: Int(aValues[0]), y: Int(aValues[1])),
-            b: Point(x: Int(bValues[0]), y: Int(bValues[1])),
-            prize: Point(x: Int(prizeValues[0]), y: Int(prizeValues[1]))
-        )
-        machines.append(machine)
+        let line = lines[index].components(separatedBy: ["=", "+", ",", "X", "Y"]).compactMap(Int.init)
+        guard line.count == 2 else { return nil }
+
+        return Point(x: line[0], y: line[1])
     }
-
-    return machines
 }
