@@ -91,14 +91,23 @@ let multiplierY = 100
 
 // MARK: - Start
 let (mapOld, commands) = parseInput(input)
-let map = rebuild(mapOld)
-visualize(mapOld)
-visualize(map)
+print("1:")
+if let robotStartPosition = getRobotPosition(mapOld) {
+    print("Robot start position: \(robotStartPosition)")
+    visualize(mapOld)
+    let warehouse = cleanWarehouse(mapOld, commands: commands, position: robotStartPosition)
+    let result = calculate(warehouse)
+    print(result)
+} else {
+    print("Robot not found!")
+}
 
+print("\n2:")
+let map = rebuild(mapOld)
 if let robotStartPosition = getRobotPosition(map) {
     print("Robot start position: \(robotStartPosition)")
+    visualize(map)
     let warehouse = cleanWarehouse(map, commands: commands, position: robotStartPosition)
-    visualize(warehouse)
     let result = calculate(warehouse)
     print(result)
 } else {
@@ -112,32 +121,38 @@ func cleanWarehouse(_ map: [[Character]], commands: [Direction], position: Point
     let cols = warehouse[0].count
     var robotPosition = position
 
-    // dfs
+    // bfs
     func canMoveAll(from position: Point, to direction: Direction) -> [Point]? {
         var boxes: [Point] = []
-        var stack: [Point] = [position]
         let dir = direction.move()
+        var queue: [Point] = [position]
+        func queueAdd(_ point: Point) {
+            queue.insert(point, at: 0)
+        }
 
-        while let current = stack.popLast() {
+        while let current = queue.popLast() {
             let newPoint = current + dir
             guard !boxes.contains(where: { $0 == newPoint }) else { continue }
             guard 0..<rows ~= newPoint.y, 0..<cols ~= newPoint.x, warehouse[newPoint.y][newPoint.x] != wall else { return nil }
 
             switch warehouse[newPoint.y][newPoint.x] {
+            case boxOld:
+                boxes.append(newPoint)
+                queueAdd(newPoint)
             case box1:
                 boxes.append(newPoint)
-                stack.append(newPoint)
+                queueAdd(newPoint)
 
                 let addPoint = newPoint + .right
                 boxes.append(addPoint)
-                stack.append(addPoint)
+                queueAdd(addPoint)
             case box2:
                 boxes.append(newPoint)
-                stack.append(newPoint)
+                queueAdd(newPoint)
 
                 let addPoint = newPoint + .left
                 boxes.append(addPoint)
-                stack.append(addPoint)
+                queueAdd(addPoint)
             default:
                 continue
             }
@@ -147,13 +162,11 @@ func cleanWarehouse(_ map: [[Character]], commands: [Direction], position: Point
 
     func moveAllBoxes(_ boxes: [Point], to direction: Direction) {
         guard !boxes.isEmpty else { return }
-        let copy = warehouse
+
         let dir = direction.move()
-        for point in boxes {
+        for point in boxes.reversed() {
+            warehouse[point.y + dir.y][point.x + dir.x] = warehouse[point.y][point.x]
             warehouse[point.y][point.x] = ground
-        }
-        for point in boxes {
-            warehouse[point.y + dir.y][point.x + dir.x] = copy[point.y][point.x]
         }
     }
 
@@ -166,13 +179,15 @@ func cleanWarehouse(_ map: [[Character]], commands: [Direction], position: Point
     var step = 0
     for command in commands {
         step += 1
-        print("step: \(step) \(robot): \(command.rawValue)")
+//        print("step: \(step) \(robot): \(command.rawValue)")
+//        visualize(warehouse)
 
         if let points = canMoveAll(from: robotPosition, to: command) {
             moveAllBoxes(points, to: command)
             moveRobot(to: command)
         }
     }
+    visualize(warehouse)
     return warehouse
 }
 
@@ -180,7 +195,7 @@ func calculate(_ map: [[Character]]) -> Int {
     var sum = 0
     for y in map.indices {
         for x in map[y].indices {
-            guard map[y][x] == box1 else { continue }
+            guard map[y][x] == box1 || map[y][x] == boxOld else { continue }
             sum += y * multiplierY + x
         }
     }
@@ -221,6 +236,6 @@ func getRobotPosition(_ map: [[Character]]) -> Point? {
     return nil
 }
 
-func visualize(_ map: [[Character]], position: Point = Point(x: 0, y: 0)) {
+func visualize(_ map: [[Character]]) {
     print(map.map { String($0) }.joined(separator: "\n"),"\n")
 }
