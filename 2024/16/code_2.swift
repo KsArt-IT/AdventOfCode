@@ -120,39 +120,37 @@ func findPath(on map: [[Character]], start: Point, end: Point) -> (Int, Int) {
 
     var minCost = Int.max
 
-    while !queue.isEmpty {
-        var nextQueue: [State] = []
-        for state in queue {
-            guard state.cost <= minCost else { continue }
+    // bfs
+    while let state = queue.popLast()  {
+        guard state.cost <= minCost else { continue }
 
-            if state.position == end {
-                minCost = min(minCost, state.cost)
-                if state.cost == minCost {
-                    paths[minCost, default: []].append(state.path)
-                }
-                continue
+        if state.position == end {
+            minCost = min(minCost, state.cost)
+            if state.cost == minCost {
+                paths[minCost, default: []].append(state.path)
             }
+            continue
+        }
 
-            guard visited[state.position.y][state.position.x][state.direction.rawValue] >= state.cost else { continue }
-            visited[state.position.y][state.position.x][state.direction.rawValue] = state.cost
+        guard visited[state.position.y][state.position.x][state.direction.rawValue] >= state.cost else { continue }
+        visited[state.position.y][state.position.x][state.direction.rawValue] = state.cost
 
-            for direction in Direction.allCases {
-                guard direction != state.direction.reverse() else { continue }
+        for direction in Direction.allCases {
+            guard direction != state.direction.reverse() else { continue }
 
-                let nextPosition = state.position + direction
-                if map[nextPosition.y][nextPosition.x] != wallSymbol || nextPosition == end {
-                    nextQueue.append(
-                        State(
-                            position: nextPosition,
-                            direction: direction,
-                            cost: state.cost + direction.cost(state.direction),
-                            path: state.path + [nextPosition]
-                        )
-                    )
-                }
+            let nextPosition = state.position + direction
+            if map[nextPosition.y][nextPosition.x] != wallSymbol || nextPosition == end {
+                queue.insert(
+                    State(
+                        position: nextPosition,
+                        direction: direction,
+                        cost: state.cost + direction.cost(state.direction),
+                        path: state.path + [nextPosition]
+                    ),
+                    at: 0
+                )
             }
         }
-        queue = nextQueue
     }
 
     var points = 0
