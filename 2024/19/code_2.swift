@@ -25,7 +25,7 @@ bbrgwb
 
 // MARK: - Start
 let date = Date.now
-if let (patterns, designs) = parseInput(input) {
+if let (patterns, designs) = parseInput(inputTest) {
     print("Total designs: \(designs.count), patterns: \(patterns.count)")
 
     // Запустимо обчислення у кілька потоків
