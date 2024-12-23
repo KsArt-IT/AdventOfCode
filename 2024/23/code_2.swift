@@ -53,7 +53,7 @@ ka-de
 
 // MARK: - Class with code
 final class LanParty {
-    let task = "2024.23.1"
+    let task = "2024.23.2"
     let taskName = "LAN Party"
 
     private let connections: [[String]]

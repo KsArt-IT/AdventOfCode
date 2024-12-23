@@ -34,7 +34,7 @@ let inputWork = """
 """
 
 final class RaceCondition {
-    let task = "2024.20.1"
+    let task = "2024.20.2"
     let taskName = "Race Condition"
 
     struct Point: Hashable {

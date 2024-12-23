@@ -24,7 +24,7 @@ let inputTest = """
 
 // MARK: - Class with code
 final class KeypadConundrum {
-    let task = "2024.21.1"
+    let task = "2024.21.2"
     let taskName = "Keypad Conundrum"
 
     struct Point: Hashable {

@@ -22,7 +22,7 @@ let inputTest = """
 
 // MARK: - Class with code
 final class MonkeyMarket {
-    let task = "2024.22.1"
+    let task = "2024.22.2"
     let taskName = "Monkey Market"
 
     private let numbers: [Int]
