@@ -19,6 +19,15 @@ let input = """
 292: 11 6 16 20
 83: 17 5
 """
+// c Int("\(n1)\(n2)") ?? 0
+// time: 0.00515592098236084
+// sum: 3749
+// sum: 11387
+
+// c pow10
+// time: 0.0011650323867797852
+// sum: 3749
+// sum: 11387
 
 enum Operations {
     case add
@@ -29,8 +38,18 @@ enum Operations {
         switch self {
         case .add: n1 + n2
         case .multiply: n1 * n2
-        case .concat: Int("\(n1)\(n2)") ?? 0
+        case .concat: (n1 * pow10(for: n2)) + n2
         }
+    }
+
+    private func pow10(for num: Int) -> Int {
+        var result = 1
+        var n = num
+        while n > 0 {
+            n /= 10
+            result *= 10
+        }
+        return result
     }
 }
 
